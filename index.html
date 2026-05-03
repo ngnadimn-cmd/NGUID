@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hacker UID Editor Pro</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:#000;
+    min-height:100vh;
+    overflow-x:hidden;
+    color:white;
+}
+
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-1;
+}
+
+.container{
+    width:95%;
+    max-width:500px;
+    margin:20px auto;
+    padding:20px;
+    border-radius:25px;
+    background:rgba(0,0,0,0.88);
+    border:2px solid #00ff99;
+    box-shadow:0 0 30px #00ff99;
+    backdrop-filter:blur(10px);
+}
+
+.header{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.header h1{
+    color:#00ff99;
+    font-size:30px;
+    text-shadow:0 0 15px #00ff99;
+}
+
+.subtitle{
+    color:#aaa;
+    margin-top:8px;
+}
+
+.upload-area{
+    border:2px dashed #00ff99;
+    border-radius:20px;
+    padding:35px 20px;
+    text-align:center;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.upload-area:hover{
+    background:rgba(0,255,153,0.08);
+    box-shadow:0 0 20px #00ff99;
+}
+
+.upload-icon{
+    font-size:55px;
+    margin-bottom:10px;
+}
+
+.upload-text{
+    font-size:18px;
+    font-weight:bold;
+}
+
+.upload-sub{
+    color:#aaa;
+    margin-top:5px;
+    font-size:13px;
+}
+
+input[type="file"]{
+    display:none;
+}
+
+.file-info{
+    display:none;
+    margin-top:25px;
+    background:#dfe7ef;
+    border-radius:30px;
+    padding:18px;
+    border:4px solid #00ffee;
+    box-shadow:0 0 25px #00ffee;
+}
+
+.info-card{
+    background:#f5f5f5;
+    border-left:6px solid #00ffee;
+    border-radius:20px;
+    padding:18px;
+    margin-bottom:18px;
+}
+
+.info-title{
+    color:#000;
+    font-size:15px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.info-value{
+    background:white;
+    border:3px solid #ddd;
+    border-radius:15px;
+    padding:15px;
+    color:#333;
+    font-size:18px;
+    word-break:break-all;
+}
+
+.hex-box{
+    background:#283046;
+    color:#00ff66;
+    font-family:monospace;
+    border:3px solid #4c5c7c;
+}
+
+.edit-section{
+    margin-top:20px;
+}
+
+.edit-label{
+    color:#fff;
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.uid-input{
+    width:100%;
+    padding:18px;
+    border-radius:20px;
+    border:4px solid #19b84f;
+    font-size:20px;
+    font-weight:bold;
+    background:#edf5ed;
+    color:#000;
+}
+
+.uid-input:focus{
+    outline:none;
+    box-shadow:0 0 20px #00ff99;
+}
+
+.note{
+    color:#45d26b;
+    font-style:italic;
+    margin-top:10px;
+    font-weight:bold;
+}
+
+.btn{
+    width:100%;
+    border:none;
+    border-radius:20px;
+    padding:18px;
+    font-size:22px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+    margin-top:18px;
+}
+
+.btn-update{
+    background:linear-gradient(90deg,#1d74c9,#0c4d86);
+    color:white;
+    box-shadow:0 0 20px rgba(0,150,255,0.5);
+}
+
+.btn-update:hover{
+    transform:scale(1.02);
+}
+
+.btn-remove{
+    background:linear-gradient(90deg,#ff0040,#7a001d);
+    color:white;
+}
+
+.btn-clear{
+    background:#555;
+    color:white;
+}
+
+.status{
+    display:none;
+    margin-top:15px;
+    padding:15px;
+    border-radius:15px;
+    text-align:center;
+    font-weight:bold;
+}
+
+.success{
+    background:#063d20;
+    border:2px solid #00ff99;
+    color:#00ff99;
+}
+
+.error{
+    background:#4a0000;
+    border:2px solid #ff4d4d;
+    color:#ffaaaa;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+    margin-top:20px;
+}
+
+.stat-box{
+    background:#101010;
+    border:2px solid #00ff99;
+    border-radius:20px;
+    padding:20px;
+    text-align:center;
+}
+
+.stat-box h2{
+    color:#00ff99;
+    font-size:30px;
+}
+
+.footer{
+    margin-top:25px;
+    text-align:center;
+    color:#999;
+    font-size:13px;
+}
+
+@media(max-width:480px){
+    .header h1{
+        font-size:24px;
+    }
+
+    .btn{
+        font-size:18px;
+    }
+}
+</style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="container">
+
+    <div class="header">
+        <h1>⚡ NGFF UID EDITOR</h1>
+        <p class="subtitle">Edit • Remove • Download UID</p>
+    </div>
+
+    <label class="upload-area" for="fileInput">
+        <div class="upload-icon">📂</div>
+        <div class="upload-text">UPLOAD .META OR .BYTES FILE</div>
+        <div class="upload-sub">Tap here to select your file</div>
+    </label>
+
+    <input type="file" id="fileInput">
+
+    <div class="file-info" id="fileInfo">
+
+        <div class="info-card">
+            <div class="info-title">📄 FILE NAME</div>
+            <div class="info-value" id="fileName"></div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-title">📊 CURRENT UID (Decimal)</div>
+            <div class="info-value" id="currentUID"></div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-title">🔢 HEX FORMAT</div>
+            <div class="info-value hex-box" id="currentHex"></div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-title">📁 FILE TYPE</div>
+            <div class="info-value" id="fileType"></div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-title">📏 FILE SIZE</div>
+            <div class="info-value" id="fileSize"></div>
+        </div>
+
+        <div class="edit-section">
+            <div class="edit-label">🎯 New UID (Decimal)</div>
+
+            <input type="text" id="newUID" class="uid-input">
+
+            <div class="note">💡 Current UID auto-filled. Edit to change it.</div>
+        </div>
+
+        <button class="btn btn-update" id="updateBtn">🚀 Update UID</button>
+
+        <button class="btn btn-remove" id="removeBtn">❌ Remove UID</button>
+
+        <button class="btn btn-clear" id="clearBtn">🔄 Clear & Start Over</button>
+
+        <div class="status" id="status"></div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <h2 id="filesProcessed">0</h2>
+                <p>Files</p>
+            </div>
+
+            <div class="stat-box">
+                <h2 id="uidsChanged">0</h2>
+                <p>Changed</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        NGFF Hacker Matrix UID Editor
+    </div>
+
+</div>
+
+<script>
+
+/* MATRIX EFFECT */
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const chars = 'NGFFNGFF0101NGFFABCDEFGHIJKLMNOPQRSTUVWXYZ#$%^&*';
+const fontSize = 14;
+const columns = canvas.width / fontSize;
+const drops = [];
+
+for(let i = 0; i < columns; i++){
+    drops[i] = 1;
+}
+
+function drawMatrix(){
+    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle = '#00ff99';
+    ctx.font = fontSize + 'px monospace';
+
+    for(let i = 0; i < drops.length; i++){
+        const text = chars[Math.floor(Math.random() * chars.length)];
+
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if(drops[i] * fontSize > canvas.height && Math.random() > 0.975){
+            drops[i] = 0;
+        }
+
+        drops[i]++;
+    }
+}
+
+setInterval(drawMatrix, 35);
+
+/* APP */
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const fileName = document.getElementById('fileName');
+const currentUID = document.getElementById('currentUID');
+const currentHex = document.getElementById('currentHex');
+const fileType = document.getElementById('fileType');
+const fileSize = document.getElementById('fileSize');
+const newUID = document.getElementById('newUID');
+const statusBox = document.getElementById('status');
+
+const filesProcessed = document.getElementById('filesProcessed');
+const uidsChanged = document.getElementById('uidsChanged');
+
+const updateBtn = document.getElementById('updateBtn');
+const removeBtn = document.getElementById('removeBtn');
+const clearBtn = document.getElementById('clearBtn');
+
+let currentFile = null;
+let currentBuffer = null;
+let uidStart = -1;
+let uidEnd = -1;
+
+let filesCount = 0;
+let changedCount = 0;
+
+const MARKERS = {
+    '.meta': { start:'8803', end:'A2' },
+    '.bytes': { start:'180138', end:'42' }
+};
+
+function showStatus(message,type){
+    statusBox.style.display = 'block';
+    statusBox.className = 'status ' + type;
+    statusBox.innerText = message;
+
+    setTimeout(()=>{
+        statusBox.style.display = 'none';
+    },3000);
+}
+
+function hexToBytes(hex){
+    const arr = [];
+
+    for(let i = 0; i < hex.length; i += 2){
+        arr.push(parseInt(hex.substr(i,2),16));
+    }
+
+    return new Uint8Array(arr);
+}
+
+function bytesToHex(bytes){
+    return Array.from(bytes, b => ('0' + b.toString(16)).slice(-2)).join('').toUpperCase();
+}
+
+function decodeVarInt(bytes){
+    let result = 0n;
+    let shift = 0n;
+
+    for(let i = 0; i < bytes.length; i++){
+        const byte = BigInt(bytes[i]);
+
+        result |= (byte & 0x7Fn) << shift;
+
+        if(!(byte & 0x80n)){
+            return Number(result);
+        }
+
+        shift += 7n;
+    }
+
+    return 0;
+}
+
+function encodeVarInt(value){
+    let num = BigInt(value);
+    const buffer = [];
+
+    while(true){
+        let temp = Number(num & 0x7Fn);
+        num >>= 7n;
+
+        if(num){
+            temp |= 0x80;
+        }
+
+        buffer.push(temp);
+
+        if(!num) break;
+    }
+
+    return new Uint8Array(buffer);
+}
+
+fileInput.addEventListener('change', (e)=>{
+
+    const file = e.target.files[0];
+
+    if(!file) return;
+
+    currentFile = file;
+
+    const reader = new FileReader();
+
+    reader.onload = function(ev){
+
+        currentBuffer = new Uint8Array(ev.target.result);
+
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+
+        if(!MARKERS[ext]){
+            showStatus('Unsupported File Type','error');
+            return;
+        }
+
+        const startMarker = hexToBytes(MARKERS[ext].start);
+        const endMarker = hexToBytes(MARKERS[ext].end);
+
+        let startIndex = -1;
+        let endIndex = -1;
+
+        for(let i = 0; i < currentBuffer.length - startMarker.length; i++){
+
+            let found = true;
+
+            for(let j = 0; j < startMarker.length; j++){
+                if(currentBuffer[i+j] !== startMarker[j]){
+                    found = false;
+                    break;
+                }
+            }
+
+            if(found){
+                startIndex = i;
+                break;
+            }
+        }
+
+        if(startIndex !== -1){
+            for(let i = startIndex; i < currentBuffer.length - endMarker.length; i++){
+
+                let found = true;
+
+                for(let j = 0; j < endMarker.length; j++){
+                    if(currentBuffer[i+j] !== endMarker[j]){
+                        found = false;
+                        break;
+                    }
+                }
+
+                if(found){
+                    endIndex = i;
+                    break;
+                }
+            }
+        }
+
+        if(startIndex === -1 || endIndex === -1){
+            showStatus('UID Not Found','error');
+            return;
+        }
+
+        uidStart = startIndex + startMarker.length;
+        uidEnd = endIndex;
+
+        const uidBytes = currentBuffer.slice(uidStart, uidEnd);
+
+        const decodedUID = decodeVarInt(uidBytes);
+
+        fileName.innerText = file.name;
+        currentUID.innerText = decodedUID;
+        currentHex.innerText = bytesToHex(uidBytes);
+        fileType.innerText = ext.toUpperCase();
+        fileSize.innerText = (file.size / 1024).toFixed(2) + ' KB';
+
+        newUID.value = decodedUID;
+
+        fileInfo.style.display = 'block';
+
+        filesCount++;
+        filesProcessed.innerText = filesCount;
+
+        showStatus('UID Found Successfully','success');
+    }
+
+    reader.readAsArrayBuffer(file);
+});
+
+updateBtn.addEventListener('click', ()=>{
+
+    if(!currentBuffer) return;
+
+    const value = parseInt(newUID.value.trim());
+
+    if(isNaN(value)){
+        showStatus('Invalid UID','error');
+        return;
+    }
+
+    const newBytes = encodeVarInt(value);
+
+    const oldLength = uidEnd - uidStart;
+
+    if(newBytes.length > oldLength){
+        showStatus('UID Too Long','error');
+        return;
+    }
+
+    const updated = new Uint8Array(currentBuffer);
+
+    updated.set(newBytes, uidStart);
+
+    for(let i = newBytes.length; i < oldLength; i++){
+        updated[uidStart + i] = 0x00;
+    }
+
+    const blob = new Blob([updated]);
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = currentFile.name;
+    link.click();
+
+    changedCount++;
+    uidsChanged.innerText = changedCount;
+
+    showStatus('UID Updated & Downloaded','success');
+});
+
+removeBtn.addEventListener('click', ()=>{
+
+    if(!currentBuffer) return;
+
+    const updated = new Uint8Array(currentBuffer);
+
+    for(let i = uidStart; i < uidEnd; i++){
+        updated[i] = 0x00;
+    }
+
+    const blob = new Blob([updated]);
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = currentFile.name;
+    link.click();
+
+    showStatus('UID Removed & Downloaded','success');
+});
+
+clearBtn.addEventListener('click', ()=>{
+
+    fileInput.value = '';
+    fileInfo.style.display = 'none';
+    currentBuffer = null;
+    currentFile = null;
+
+    showStatus('Reset Complete','success');
+});
+
+</script>
+</body>
+</html>
